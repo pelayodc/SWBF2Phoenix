@@ -343,6 +343,36 @@ public static class PhxLuaAPI
 
     }
 
+	public static void ScriptCB_SetSpawnDisplayGain(int n, float m)
+    {
+
+    }
+
+	public static void ScriptCB_EnableCommandPostVO(int n)
+    {
+
+    }
+
+	public static void ScriptCB_SndPlaySound(string name)
+    {
+		
+	}
+
+	public static void ScriptCB_PlayInGameMusic(string name)
+    {
+		
+	}
+
+	public static void ScriptCB_StopInGameMusic(string name)
+    {
+
+    }
+
+	public static int ScriptCB_GetASSNumBots()
+    {
+		return 0;
+    }
+
 	public static void SetPS2ModelMemory(int PS2Mem)
 	{
 		
@@ -459,6 +489,11 @@ public static class PhxLuaAPI
 	public static void SetUnitCount(int teamIdx, int numUnits)
 	{
 		MT.SetUnitCount(teamIdx, numUnits);
+	}
+
+	public static void AddUnitClass(int teamIdx, string className)
+	{
+		MT.AddUnitClass(teamIdx, className);
 	}
 
 	public static void AddUnitClass(int teamIdx, string className, int unitCountMin)
@@ -655,14 +690,25 @@ public static class PhxLuaAPI
 		return 0f;
     }
 
+	public static void EnableBarriers(string barrierName)
+    {
+		GameObject barrier = GameObject.Find(barrierName.ToLower());
+		if (barrier != null)
+			barrier.SetActive(true);
+	}
+
 	public static void DisableBarriers(string barrierName)
 	{
-		
+		// ¿Is not always the gameObject name?
+		Debug.Log(barrierName);
+		GameObject barrier = GameObject.Find(barrierName.ToLower());
+		if (barrier != null)
+			barrier.SetActive(false);
 	}
 
 	public static void PlayAnimation(string animName)
 	{
-		
+		RTS.Animator.PlayAnimation(animName.ToLower());
 	}
 
 	public static void PlayAnimationFromTo(string animName, float start, float end)
@@ -672,8 +718,8 @@ public static class PhxLuaAPI
 
 	public static void PauseAnimation(string animName)
     {
-
-    }
+		RTS.Animator.PauseAnimation(animName.ToLower());
+	}
 
 	public static void RewindAnimation(string animName)
 	{
@@ -740,6 +786,103 @@ public static class PhxLuaAPI
 
     }
 
+
+
+
+	public static void SetSpawnDelayTeam(int team, float n, float m)
+	{
+
+	}
+
+	public static void SetMissionEndMovie(string path, string name)
+    {
+
+    }
+
+	public static void ShowObjectiveTextPopup(string path)
+	{
+		Debug.Log(path);
+		GAME.ShowObjetive(path);
+	}
+
+	public static void DisableAIAutoBalance()
+    {
+
+    }
+
+	//Not sure if gameObject or stringName
+	public static bool IsCharacterHuman(string id)
+    {
+		return true;
+    }
+
+	//refers to other callback? Ex:ReleaseCharacterSpawn(onfirstspawn)
+	public static void ReleaseCharacterSpawn(int n)
+    {
+
+    }
+
+	public static void ShowMessageText(string path)
+	{
+		GAME.ShowMessage(path);
+	}
+
+	public static void ShowMessageText(string path, int teamIdx)
+    {
+		GAME.ShowMessage(path);
+    }
+
+	public static void RespawnObject(string objName)
+    {
+		//Ex: RespawnObject ("Library_CP")
+	}
+
+	//Able to select hero from character selector
+	public static void UnlockHeroForTeam(int teamIdx)
+    {
+		
+    }
+
+	public static void EntityFlyerTakeOff(string id)
+    {
+
+    }
+
+	public static void EntityFlyerInitAsLanded(string id)
+	{
+
+	}
+
+	public static int GetTeamSize(int teamIdx)
+    {
+		return 0;
+    }
+
+	public static int GetCharacterTeam(string name)
+    {
+		return 0;
+    }
+
+	//return a gameObject?
+	public static string GetPathPoint(string name, int team)
+	{
+		return name;
+    }
+
+	//the 2º param is the returned from getPathPoint(position?)
+	public static void CreateEntity(string itemModelName, string obj, string itemName)
+    {
+		GAME.CreateEntity(itemModelName, obj, itemName);
+    }
+
+	//Not sure the param but expected to be the audio name
+	public static void AudioStreamComplete(string param)
+    {
+
+    }
+
+
+
 	public static void MapHideCommandPosts()
     {
 		MapHideCommandPosts(true);
@@ -749,7 +892,7 @@ public static class PhxLuaAPI
 	{
 
 	}
-
+	
 	public static void SetFlagGameplayType(string typeName)
     {
 
@@ -760,24 +903,27 @@ public static class PhxLuaAPI
 
     }
 
+	/*
+	*Only for known which objectives remains? (Map info)
+	*/
 	public static void AddMissionObjective(int teamIdx, string localizePath)
 	{
-
+		
 	}
 
 	public static void AddMissionObjective(int teamIdx, string colorName, string localizePath)
 	{
-
+		
 	}
 
 	public static void ActivateObjective(string objectiveName)
     {
-
-    }
+		Debug.Log("Activate: " + objectiveName);
+	}
 
 	public static void CompleteObjective(string objectiveName)
 	{
-
+		
 	}
 
 	public static void MissionVictory(object teams)
@@ -879,8 +1025,11 @@ public static class PhxLuaAPI
 
 	public static void KillObject(string objName)
     {
-
-    }
+		//for now
+		GameObject obj = GameObject.Find(objName.ToLower());
+		if(obj != null)
+			obj.SetActive(false);
+	}
 
 	public static void SetNumBirdTypes(int num)
     {
@@ -970,20 +1119,29 @@ public static class PhxLuaAPI
         }
 		return null;
     }
-
+	
 	public static void MapAddEntityMarker(string objName, string iconName, float size, int teamIdx, string color, bool unkwn1)
     {
-
-    }
+		//Debug.Log("Obj: " + objName);
+		//Debug.Log("Icon: " + iconName);
+		GAME.AddEntityMarker(objName, iconName, size, teamIdx, color, unkwn1);
+	}
 
 	public static void MapAddEntityMarker(string objName, string iconName, float size, int teamIdx, string color, bool unkwn1, bool unkwn2, bool unkwn3)
 	{
-
+		MapAddEntityMarker(objName, iconName, size, teamIdx, color, unkwn1);
 	}
 
 	public static void MapAddEntityMarker(string objName, string iconName, float size, int teamIdx, string color, bool unkwn1, bool unkwn2, bool unkwn3, bool unkwn4)
 	{
+		MapAddEntityMarker(objName, iconName, size, teamIdx, color, unkwn1);
+	}
 
+	//Maybe It can be an obj
+	public static void MapRemoveEntityMarker(string objName)
+	{
+		//Debug.Log("Obj: " + objName);
+		GAME.RemoveEntityMarker(objName);
 	}
 
 	public static void MapRemoveEntityMarker(object objectPtr, int teamIdx)
@@ -991,15 +1149,37 @@ public static class PhxLuaAPI
 
     }
 
-	public static void MapRemoveRegionMarker(int region)
+	//Not sure of params but expected to be the same as entity
+	public static void MapAddRegionMarker(string regionName, string iconName, float size, int teamIdx, string color, bool unkwn1)
+	{
+		// Not sure what marker has to be created here
+		//GAME.AddEntityMarker(regionName, iconName, size, teamIdx, color, unkwn1);
+	}
+
+	/*public static void MapRemoveRegionMarker(int region)
 	{
 
-	}
+	}*/
 
 	public static void MapRemoveRegionMarker(string regionName)
     {
+		//GAME.RemoveEntityMarker(regionName);
+	}
+
+	public static void MapAddClassMarker(string className, string iconName, float size, int teamIdx, string color, bool unkwn1)
+	{
+		//Debug.Log(className);
+	}
+
+	public static void MapRemoveClassMarker(string className)
+    {
 
     }
+
+	public static void MapRemoveClassMarker(string className, int teamIdx)
+	{
+
+	}
 
 	public static int GetFlagCarrier(string flagName)
     {
@@ -1102,6 +1282,10 @@ public static class PhxLuaAPI
 	// Event Callbacks
 	// ===============================================================================================================
 
+	public static void OnCharacterSpawn(PhxLuaRuntime.LFunction callback)
+	{
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnCharacterSpawn, callback);
+	}
 	public static void OnCharacterDeath(PhxLuaRuntime.LFunction callback)
     {
 		
@@ -1120,7 +1304,10 @@ public static class PhxLuaAPI
 	}
 	public static void OnEnterRegion(PhxLuaRuntime.LFunction callback, string regionName)
     {
-		PhxLuaEvents.Register(PhxLuaEvents.Event.OnEnterRegion, callback, regionName);
+		//Debug.Log(regionName);
+		//Debug.Log(callback);
+		//Should be toLower() because in unity the obj names are  all lowered
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnEnterRegion, callback, regionName.ToLower());
 	}
 	public static void OnEnterRegionTeam(PhxLuaRuntime.LFunction callback, string regionName, int teamIdx)
 	{
@@ -1170,7 +1357,7 @@ public static class PhxLuaAPI
 	}
 	public static void OnObjectKillName(PhxLuaRuntime.LFunction callback, string objName)
 	{
-		
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnObjectKillName, callback, objName.ToLower());
 	}
 	public static void OnObjectKillTeam(PhxLuaRuntime.LFunction callback, int teamIdx)
 	{
@@ -1182,7 +1369,7 @@ public static class PhxLuaAPI
 	}
 	public static void OnObjectRespawnName(PhxLuaRuntime.LFunction callback, string objName)
 	{
-		
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnObjectRespawnName, callback, objName.ToLower());
 	}
 
 	public static void OnObjectRepairName(PhxLuaRuntime.LFunction callback, string objName)
@@ -1206,6 +1393,16 @@ public static class PhxLuaAPI
 	{
 
 	}
+
+	public static void OnFlagPickUp(PhxLuaRuntime.LFunction callback, string character)
+    {
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnFlagPickUp, callback, character);
+	}
+
+	public static void OnFlagDrop(PhxLuaRuntime.LFunction callback, string character)
+	{
+		PhxLuaEvents.Register(PhxLuaEvents.Event.OnFlagDrop, callback, character);
+	}
 }
 
 public static class PhxLuaEvents
@@ -1224,6 +1421,11 @@ public static class PhxLuaEvents
 		OnFinishCaptureName,
 		OnFinishCaptureTeam,
 		OnFinishNeutralize,
+		OnCharacterSpawn,
+		OnFlagPickUp,
+		OnFlagDrop,
+		OnObjectKillName,
+		OnObjectRespawnName,
 	}
 
 	/// <summary>
@@ -1315,6 +1517,10 @@ public static class PhxLuaEvents
 				callbacks[i].Invoke(eventArgs);
 				Debug.Log($"Invoked Lua callback for '{ev}'");
 			}
+		}
+		else
+		{
+			Debug.Log($"Failed to find callback for '{ev}'");
 		}
 	}
 

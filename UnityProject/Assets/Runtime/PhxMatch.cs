@@ -271,6 +271,9 @@ public class PhxMatch
         pawn.Assign(Player);
         SetPlayerState(PhxPlayerState.Spawned);
 
+        //LUA Call
+        PhxLuaEvents.Invoke(PhxLuaEvents.Event.OnCharacterSpawn);
+
         Debug.Log($"Spawned player at pos: {position} - rot: {rotation}");
 
         return pawn;
@@ -386,7 +389,7 @@ public class PhxMatch
         Teams[teamIdx].ReinforcementCount += reinfCount;
     }
 
-    public void AddUnitClass(int teamIdx, string className, int unitCountMin, int unitCountMax = int.MaxValue)
+    public void AddUnitClass(int teamIdx, string className, int unitCountMin = 0, int unitCountMax = int.MaxValue)
     {
         if (!CheckTeamIdx(--teamIdx)) return;
 

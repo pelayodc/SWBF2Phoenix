@@ -20,25 +20,25 @@ public class PhxScene
 {
     public Texture2D MapTexture { get; private set; }
 
-    List<PhxInstance>         Instances                = new List<PhxInstance>();
+    List<PhxInstance> Instances = new List<PhxInstance>();
 
     // Subsets of 'Instances'
-    List<IPhxTickable>        TickableInstances        = new List<IPhxTickable>();
+    List<IPhxTickable> TickableInstances = new List<IPhxTickable>();
     List<IPhxTickablePhysics> TickablePhysicsInstances = new List<IPhxTickablePhysics>();
-    List<PhxCommandpost>      CommandPosts             = new List<PhxCommandpost>();
-    GameObject                Vehicles                 = new GameObject("Vehicles");
+    List<PhxCommandpost> CommandPosts = new List<PhxCommandpost>();
+    GameObject Vehicles = new GameObject("Vehicles");
 
-    Dictionary<string, PhxClass> Classes     = new Dictionary<string, PhxClass>();
-    Dictionary<string, int>      InstanceMap = new Dictionary<string, int>();
+    Dictionary<string, PhxClass> Classes = new Dictionary<string, PhxClass>();
+    Dictionary<string, int> InstanceMap = new Dictionary<string, int>();
 
     PhxEnvironment ENV;
     Container EnvCon;
     bool bTerrainImported = false;
 
     Dictionary<string, GameObject> LoadedSkydomes = new Dictionary<string, GameObject>();
-    Dictionary<string, PhxRegion>  Regions  = new Dictionary<string, PhxRegion>();
+    Dictionary<string, PhxRegion> Regions = new Dictionary<string, PhxRegion>();
 
-    List<GameObject>  WorldRoots = new List<GameObject>();
+    List<GameObject> WorldRoots = new List<GameObject>();
 
     // Camera positions
     List<PhxTransform> CameraShots = new List<PhxTransform>();
@@ -53,6 +53,9 @@ public class PhxScene
     int InstanceCounter;
 
 
+    public PhxSceneAnimator Animator { get; private set; }
+
+
     public PhxScene(PhxEnvironment env, Container c)
     {
         ENV = env;
@@ -61,6 +64,8 @@ public class PhxScene
 
         ModelLoader.Instance.PhyMat = PhxGame.Instance.GroundPhyMat;
         ENV.OnPostLoad += CalcCPCamPositions;
+
+        Animator = new PhxSceneAnimator();
     }
 
     public void SetProperty(string instName, string propName, object propValue)
@@ -173,7 +178,7 @@ public class PhxScene
     }
 
 
-    public void FireProjectile(IPhxWeapon WeaponOfOrigin, 
+    public void FireProjectile(IPhxWeapon WeaponOfOrigin,
                                 PhxOrdnanceClass OrdnanceClass,
                                 Vector3 Pos, Quaternion Rot)
     {
@@ -269,6 +274,8 @@ public class PhxScene
 
             WorldRoots.Add(worldRoot);
         }
+
+        Animator.InitializeWorldAnimations(worldLayers);
     }
 
     public SWBFPath GetPath(string pathName)
@@ -298,12 +305,12 @@ public class PhxScene
     }
 
     // TODO: implement object pooling
-    public PhxInstance CreateInstance(PhxClass cl, string instName, Vector3 position, Quaternion rotation, bool withCollision=true, Transform parent =null)
+    public PhxInstance CreateInstance(PhxClass cl, string instName, Vector3 position, Quaternion rotation, bool withCollision = true, Transform parent = null)
     {
         return CreateInstance(cl.EntityClass, instName, position, rotation, withCollision, parent).GetComponent<PhxInstance>();
     }
 
-    public PhxInstance CreateInstance(PhxClass cl, bool withCollision=true, Transform parent=null)
+    public PhxInstance CreateInstance(PhxClass cl, bool withCollision = true, Transform parent = null)
     {
         return CreateInstance(cl.EntityClass, cl.Name + InstanceCounter++, Vector3.zero, Quaternion.identity, withCollision, parent).GetComponent<PhxInstance>();
     }
@@ -389,7 +396,7 @@ public class PhxScene
         return odf;
     }
 
-    GameObject CreateInstance(ISWBFProperties instOrClass, string instName, Vector3 position, Quaternion rotation, bool withCollision=true, Transform parent =null)
+    GameObject CreateInstance(ISWBFProperties instOrClass, string instName, Vector3 position, Quaternion rotation, bool withCollision = true, Transform parent = null)
     {
         if (InstanceMap.ContainsKey(instName))
         {
@@ -463,7 +470,7 @@ public class PhxScene
             {
                 CommandPosts.Add((PhxCommandpost)script);
             }
-            if(script is PhxVehicle)
+            if (script is PhxVehicle)
             {
                 instanceObject.transform.parent = Vehicles.transform;
             }
@@ -505,7 +512,7 @@ public class PhxScene
                 closestDistance = info.distance;
             }
 
-            CPCamPositions.Add(CommandPosts[i], new PhxTransform 
+            CPCamPositions.Add(CommandPosts[i], new PhxTransform
             {
                 Position = t.position + direction * closestDistance,
                 Rotation = Quaternion.LookRotation(-direction, Vector3.Cross(right, -direction))

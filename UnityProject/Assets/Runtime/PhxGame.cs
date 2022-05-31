@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -12,6 +13,7 @@ using UnityEngine.SceneManagement;
 using LibLog = LibSWBF2.Logging.Logger;
 using LibLogEntry = LibSWBF2.Logging.LoggerEntry;
 using ELibLogType = LibSWBF2.Logging.ELogType;
+using LibSWBF2.Utils;
 
 #if UNIX
 using System.IO;
@@ -30,19 +32,23 @@ public class PhxGame : MonoBehaviour
     public PhxSettings Settings;
 
     [Header("References")]
-    public PhxLoadscreen      InitScreenPrefab;
-    public PhxLoadscreen      LoadScreenPrefab;
-    public PhxMainMenu        MainMenuPrefab;
-    public PhxPauseMenu       PauseMenuPrefab;
+    public PhxLoadscreen InitScreenPrefab;
+    public PhxLoadscreen LoadScreenPrefab;
+    public PhxMainMenu MainMenuPrefab;
+    public PhxPauseMenu PauseMenuPrefab;
     public PhxCharacterSelect CharacterSelectPrefab;
-    public Transform          CharSelectTransform;
-    public Volume             CharSelectPPVolume;
-    public AudioMixerGroup    UIAudioMixer;
-    public PhxCamera          Camera;
-    public PhysicMaterial     GroundPhyMat;
-    public PhxHUD             HUDPrefab;
-    public PhxBolt            BoltPrefab;
-    public PhxBeam            BeamPrefab;
+    public Transform CharSelectTransform;
+    public Volume CharSelectPPVolume;
+    public AudioMixerGroup UIAudioMixer;
+    public PhxCamera Camera;
+    public PhysicMaterial GroundPhyMat;
+    public PhxHUD HUDPrefab;
+    public PhxBolt BoltPrefab;
+    public PhxBeam BeamPrefab;
+    public PhxObjetivePopUp ObjetivePopUpPrefab;
+
+    //Test
+    public GameObject markerPrefab;
 
     [Header("For non-Windows Users")]
     public string MissionListPath = Application.platform == RuntimePlatform.WindowsEditor ? "" : "path/to/missionlist.lua";
@@ -61,7 +67,7 @@ public class PhxGame : MonoBehaviour
     // Used only when registering addons
     PhxPath CurrentAddonFolder;
 
-    PhxLoadscreen    CurrentLS;
+    PhxLoadscreen CurrentLS;
     PhxMenuInterface CurrentMenu;
 
     // ring buffer
@@ -70,7 +76,7 @@ public class PhxGame : MonoBehaviour
 
     PhxEnvironment Env;
     Dictionary<string, string> RegisteredAddons = new Dictionary<string, string>();
-    
+
     // Maps addons to their root folders
     Dictionary<string, PhxPath> AddonRoots = new Dictionary<string, PhxPath>();
 
@@ -81,7 +87,7 @@ public class PhxGame : MonoBehaviour
     List<string> MapRotation = new List<string>();
     int MapRotationIdx = -1;
 
-
+    List<GameObject> markers = new List<GameObject>();
 
     // Do not call Destroy on destruction in Editor!
     // For some reason, when switching between Edit and Play mode,
@@ -168,7 +174,7 @@ public class PhxGame : MonoBehaviour
         {
             Debug.LogWarningFormat("Addon script '{0}' already registered to '{1}'!", scriptName, addNm);
         }
-        else 
+        else
         {
             // CurrentAddonFolder is set in OnMainMenuExecution
             AddonRoots[addonName] = CurrentAddonFolder;
@@ -358,11 +364,11 @@ public class PhxGame : MonoBehaviour
         AddonPath = GamePath / "GameData/addon";
         StdLVLPC = GamePath / "GameData/data/_lvl_pc";
 
-        if (GamePath.IsFile()              || 
-            !GamePath.Exists()             || 
-            !CheckStdLVLExistence("common.lvl")  ||
-            !CheckStdLVLExistence("core.lvl")    ||
-            !CheckStdLVLExistence("ingame.lvl")  ||
+        if (GamePath.IsFile() ||
+            !GamePath.Exists() ||
+            !CheckStdLVLExistence("common.lvl") ||
+            !CheckStdLVLExistence("core.lvl") ||
+            !CheckStdLVLExistence("ingame.lvl") ||
             !CheckStdLVLExistence("inshell.lvl") ||
             !CheckStdLVLExistence("mission.lvl") ||
             !CheckStdLVLExistence("shell.lvl"))
@@ -392,7 +398,7 @@ public class PhxGame : MonoBehaviour
         if (!AddonPath.Exists()) return;
 
         string[] addons = System.IO.Directory.GetDirectories(AddonPath);
-        
+
         foreach (PhxPath addon in addons)
         {
             PhxPath addme = addon / "addme.script";
@@ -468,18 +474,18 @@ public class PhxGame : MonoBehaviour
 
         LibLog.SetLogLevel(ELibLogType.Warning);
 
-        Debug.Assert(InitScreenPrefab     != null);
-        Debug.Assert(LoadScreenPrefab     != null);
-        Debug.Assert(MainMenuPrefab       != null);
-        Debug.Assert(PauseMenuPrefab      != null);
-        Debug.Assert(CharSelectTransform  != null);
-        Debug.Assert(CharSelectPPVolume   != null);
-        Debug.Assert(UIAudioMixer         != null);
-        Debug.Assert(Camera               != null);
-        Debug.Assert(GroundPhyMat         != null);
-        Debug.Assert(HUDPrefab            != null);
-        Debug.Assert(BoltPrefab           != null);
-        Debug.Assert(BeamPrefab           != null);
+        Debug.Assert(InitScreenPrefab != null);
+        Debug.Assert(LoadScreenPrefab != null);
+        Debug.Assert(MainMenuPrefab != null);
+        Debug.Assert(PauseMenuPrefab != null);
+        Debug.Assert(CharSelectTransform != null);
+        Debug.Assert(CharSelectPPVolume != null);
+        Debug.Assert(UIAudioMixer != null);
+        Debug.Assert(Camera != null);
+        Debug.Assert(GroundPhyMat != null);
+        Debug.Assert(HUDPrefab != null);
+        Debug.Assert(BoltPrefab != null);
+        Debug.Assert(BeamPrefab != null);
 
         for (int i = 0; i < UIAudio.Length; ++i)
         {
@@ -489,7 +495,7 @@ public class PhxGame : MonoBehaviour
             UIAudio[i].outputAudioMixerGroup = UIAudioMixer;
         }
 
-        
+
 #if UNIX
         if (PlayerPrefs.GetInt("PhoenixUnixRename") == 0)
         {
@@ -533,6 +539,60 @@ public class PhxGame : MonoBehaviour
 #endif
 
         Init();
+    }
+
+    public void ShowObjetive(string path)
+    {
+        string objetiveText = Env.GetLocalized(path);
+        ObjetivePopUpPrefab.SetText(objetiveText);
+        ShowMenu(ObjetivePopUpPrefab);
+    }
+
+    public void ShowMessage(string path)
+    {
+        //Show a message on the kills feed (not implemented yet)
+        Debug.Log(Env.GetLocalized(path));
+    }
+
+    //hud_objective_icon 
+    public void AddEntityMarker(string objName, string iconName, float size, int teamIdx, string colorName, bool unkwn1)
+    {
+        GameObject objective = GameObject.Find(objName.ToLower());
+
+        //Not sure why sometimes send the circle and others the arrows
+        string oIcon = "hud_objective_icon";
+        string oCircle = "hud_objective_icon_circle";
+ 
+
+        if (objective != null)
+        {
+            GameObject marker = Instantiate(markerPrefab, new Vector3(objective.transform.position.x, objective.transform.position.y + 2, objective.transform.position.z), new Quaternion(0,0,0,0), null);
+            marker.name = objName.ToLower() + "_marker";
+
+            Texture texture = TextureLoader.Instance.ImportUITexture(oIcon);
+            Color color = (Color)typeof(Color).GetProperty(colorName.ToLowerInvariant()).GetValue(null, null);
+            marker.GetComponent<PhxEntityMarker>().SetImg(texture, color);
+
+            markers.Add(marker);
+        }
+    }
+
+    public void RemoveEntityMarker(string objName)
+    {
+        GameObject obj = GameObject.Find(objName.ToLower() + "_marker");
+        if(obj != null)
+        {
+            markers.Remove(obj);
+            Destroy(obj);
+        }
+    }
+
+    public void CreateEntity(string itemModelName, string obj, string itemName)
+    {
+        Debug.Log("Created: "+itemName);
+        
+        GameObject entity = Instantiate(ModelLoader.Instance.GetGameObjectFromModel(itemModelName, ""), GameObject.Find(obj.ToLower()).transform.position, new Quaternion(0, 0, 0, 0), null);
+        entity.name = itemName.ToLower();
     }
 
     void Start()

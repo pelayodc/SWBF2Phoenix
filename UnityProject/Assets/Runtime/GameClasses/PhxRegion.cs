@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class PhxRegion : MonoBehaviour
 {
+
     public Collider Collider { get; private set; }
     public Action<IPhxControlableInstance> OnEnter;
     public Action<IPhxControlableInstance> OnLeave;

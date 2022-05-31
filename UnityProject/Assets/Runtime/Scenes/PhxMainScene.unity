@@ -419,15 +419,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Settings:
-    GamePathString: 
+    GamePathString: C:\Program Files (x86)\Steam\steamapps\common\Star Wars Battlefront
+      II Classic
     Language: english
     BootMode: 0
-    BootSWBF2Map: kas2c_con
+    BootSWBF2Map: cor1c_con
     BootUnityScene: PhxAnimTest
     InfiniteAmmo: 0
     ColorNeutral: {r: 1, g: 1, b: 1, a: 1}
     ColorEnemy: {r: 1, g: 0, b: 0, a: 1}
-    ColorFriendly: {r: 0, g: 1, b: 0, a: 1}
+    ColorFriendly: {r: 0, g: 1, b: 0.12644672, a: 1}
     ColorLocals: {r: 1, g: 1, b: 0, a: 1}
   InitScreenPrefab: {fileID: 8116435525958827643, guid: b41f2353f3f33804b919c04b2fd29246, type: 3}
   LoadScreenPrefab: {fileID: 4217219954888887521, guid: 753242c13dd40b24f96abc9c00940f1d, type: 3}
@@ -442,6 +443,8 @@ MonoBehaviour:
   HUDPrefab: {fileID: 7293890149350655508, guid: 694c8bdb39040774686521aa6d278167, type: 3}
   BoltPrefab: {fileID: 6623684661408825687, guid: 8cbe153bab125594c866af47d533539f, type: 3}
   BeamPrefab: {fileID: -7815452322436354814, guid: a96069e94b7e39541a586f7d9be2b127, type: 3}
+  ObjetivePopUpPrefab: {fileID: 1968151479777884801, guid: 41665b03237adcc4bbbb7075b13ed6e5, type: 3}
+  markerPrefab: {fileID: 1076037807683549270, guid: 49b08fc0b23c1f24eaa3484bd73f5cbf, type: 3}
   MissionListPath: 
 --- !u!4 &1641162174
 Transform:

@@ -9,11 +9,11 @@ using LibSWBF2.Wrappers;
 using System.Runtime.ExceptionServices;
 
 
-public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.ClassProperties>, IPhxTickable
+public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.ClassProperties>, IPhxTickable, IPhxDamageableInstance
 {
     protected static PhxScene SCENE => PhxGame.GetScene();
 
-    public class ClassProperties : PhxClass 
+    public class ClassProperties : PhxClass
     {
         public PhxProp<float> MaxHealth = new PhxProp<float>(100.0f);
 
@@ -33,7 +33,11 @@ public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.Class
     public GameObject BuiltGeometry;
     public GameObject DestroyedGeometry;
 
+
+    public float Health;
+
     protected bool IsBuilt = true;
+
 
 
 
@@ -56,15 +60,15 @@ public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.Class
             {
                 BuiltModelMapping.GameRole = SWBFGameRole.Building;
                 BuiltModelMapping.ExpandMultiLayerColliders();
-                BuiltModelMapping.SetColliderLayerFromMaskAll();                
+                BuiltModelMapping.SetColliderLayerFromMaskAll();
             }
 
             BuiltGeometry.transform.SetParent(transform);
             BuiltGeometry.transform.localPosition = Vector3.zero;
             BuiltGeometry.transform.localRotation = Quaternion.identity;
-            BuiltGeometry.SetActive(true);            
+            BuiltGeometry.SetActive(true);
         }
-        
+
 
         DestroyedGeometry = ModelLoader.Instance.GetGameObjectFromModel(C.DestroyedGeometryName.Get(), null);
 
@@ -75,8 +79,8 @@ public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.Class
             {
                 DestroyedModelMapping.GameRole = SWBFGameRole.Building;
                 DestroyedModelMapping.ExpandMultiLayerColliders();
-                DestroyedModelMapping.SetColliderLayerFromMaskAll(); 
-            }            
+                DestroyedModelMapping.SetColliderLayerFromMaskAll();
+            }
 
             DestroyedGeometry.transform.SetParent(transform);
             DestroyedGeometry.transform.localPosition = Vector3.zero;
@@ -123,14 +127,19 @@ public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.Class
     {
         float HealthPercent = CurHealth.Get() / C.MaxHealth.Get();
 
+        Health = CurHealth.Get();
+
         if (HealthPercent > 0.0001f)
         {
             if (!IsBuilt)
             {
                 BuiltGeometry.SetActive(true);
                 DestroyedGeometry.SetActive(false);
-                
+
                 IsBuilt = true;
+
+                // Call respawn events
+                PhxLuaEvents.InvokeParameterized(PhxLuaEvents.Event.OnObjectRespawnName, gameObject.name.ToLower());
             }
 
             foreach (PhxDamageEffect DamageEffect in DamageEffects)
@@ -138,19 +147,37 @@ public class PhxDestructableBuilding : PhxInstance<PhxDestructableBuilding.Class
                 DamageEffect.Update(HealthPercent);
             }
         }
-        else 
+        else
         {
             if (IsBuilt)
             {
                 PhxExplosionManager.AddExplosion(null, C.ExplosionName.Get() as PhxExplosionClass, transform.position, transform.rotation);
-                
+
                 BuiltGeometry.SetActive(false);
                 DestroyedGeometry.SetActive(true);
 
                 IsBuilt = false;
+
+                // Call death events
+                Debug.Log("Dead");
+                PhxLuaEvents.InvokeParameterized(PhxLuaEvents.Event.OnObjectKillName, gameObject.name.ToLower());
             }
         }
     }
 
-    public override void Destroy(){}
+    public override void Destroy() { }
+
+
+    public void AddDamage(float damage)
+    {
+        if (CurHealth.Get() > 0f)
+        {
+            CurHealth.Set(-1f);
+        }
+        else
+        {
+            CurHealth.Set(1f);
+        }
+    }
+
 }
