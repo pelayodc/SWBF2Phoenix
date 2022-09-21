@@ -8,10 +8,12 @@ public class PhxObjetivePopUp : PhxMenuInterface
     static PhxGame GAME => PhxGame.Instance;
 
     public Text text;
+    public Text Title;
+    public Text PTC;
 
     void Start()
     {
-        //Time.timeScale = 0f;
+        Time.timeScale = 0f;
     }
 
     public override void Clear()
@@ -19,9 +21,11 @@ public class PhxObjetivePopUp : PhxMenuInterface
 
     }
 
-    public void SetText(string objetiveText)
+    public void SetText(string objetiveText, string title, string ptc)
     {
         text.text = objetiveText;
+        Title.text = title;
+        PTC.text = ptc;
     }
 
     void Update()
@@ -30,6 +34,10 @@ public class PhxObjetivePopUp : PhxMenuInterface
         if (Input.GetKeyDown(KeyCode.Return))
         {
             Continue();
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Time.timeScale = 1.0f;
         }
     }
 

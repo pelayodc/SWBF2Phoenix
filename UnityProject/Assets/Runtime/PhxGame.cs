@@ -87,7 +87,7 @@ public class PhxGame : MonoBehaviour
     List<string> MapRotation = new List<string>();
     int MapRotationIdx = -1;
 
-    List<GameObject> markers = new List<GameObject>();
+    public List<GameObject> markers = new List<GameObject>();
 
     // Do not call Destroy on destruction in Editor!
     // For some reason, when switching between Edit and Play mode,
@@ -544,7 +544,9 @@ public class PhxGame : MonoBehaviour
     public void ShowObjetive(string path)
     {
         string objetiveText = Env.GetLocalized(path);
-        ObjetivePopUpPrefab.SetText(objetiveText);
+        string titleText = Env.GetLocalized("game.popup.objectiveTitle");
+        string ptcText = Env.GetLocalized("game.popup.pressToContinue");
+        ObjetivePopUpPrefab.SetText(objetiveText, titleText, ptcText);
         ShowMenu(ObjetivePopUpPrefab);
     }
 

@@ -279,6 +279,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 8493051276537477203}
+  Title: {fileID: 2436367115415171031}
+  PTC: {fileID: 6194386887327128222}
 --- !u!1 &2436367116583987428
 GameObject:
   m_ObjectHideFlags: 0

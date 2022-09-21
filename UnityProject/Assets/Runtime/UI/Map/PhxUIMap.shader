@@ -6,6 +6,8 @@ Shader "Phoenix/PhxUIMap"
         _MapTexSize("Map Texture Size", Float) = 1
         _CPTex ("CP Icon", 2D) = "white" {}
         _CPTexSize ("CP Icon Size", Float) = 1
+        _ObjTex("Objective Marker", 2D) = "yellow" {}
+        _ObjTexSize("Objective Marker Size", Float) = 1
         _Zoom("Zoom", Float) = 200
         _Alpha("Alpha", Float) = 0.8
 
@@ -27,15 +29,19 @@ Shader "Phoenix/PhxUIMap"
             #include "UnityCG.cginc"
 
             float4 _CPPositions[32];
+            float4 _ObjPositions[8];
             float4 _CPColors[64];
+            float4 _ObjColor;
             float _CPSelected[64];
             int _CPCount;
+            int _ObjCount;
 
             float2 _SpriteSize;     // Size of sprite host in pixels
             float2 _MapTexOffset;   // UV offset of map texture
             float2 _MapOffset;      // World space offset
             float _MapTexSize;      // Size modifier of Map texture
             float _CPTexSize;       // Size modifier of CP icon
+            float _ObjTexSize;
             float _Zoom;            // World units per UV
             float _Alpha;
             float _Radius;
@@ -62,6 +68,7 @@ Shader "Phoenix/PhxUIMap"
 
             sampler2D _MapTex;
             sampler2D _CPTex;
+            sampler2D _ObjTex;
 
             half4 _MapTex_TexelSize;
             half4 _CPTex_TexelSize;
@@ -122,6 +129,27 @@ Shader "Phoenix/PhxUIMap"
                     {
                         float c = ring(cpUV, _CPSelected[i] * 3, 0.1, 0.5);
                         col = lerp(col, _CPColors[i], c);
+                    }
+                }
+
+                for (int i = 0; i < _ObjCount; ++i)
+                {
+                    int objIdx = i / 2;
+                    int objVecIdx = (i % 2) * 2;
+                    float2 objWorldPos = float2(_ObjPositions[objIdx][objVecIdx], _ObjPositions[objIdx][objVecIdx + 1]);
+
+                    float2 objMapPos = ((objWorldPos + _MapOffset) / _Zoom) + float2(0.5, 0.5);
+                    float2 diff = abs(frag.uv - objMapPos);
+
+                    float2 objUVMin = objMapPos - CPMapHalfSize;
+                    float2 objUV = ((frag.uv - objUVMin) / CPMapHalfSize) / 2;
+
+                    if (diff.x < CPMapHalfSize.x && diff.y < CPMapHalfSize.y)
+                    {
+                        fixed4 objCol = tex2D(_ObjTex, objUV);
+                        col = col * (1 - objCol.a) + objCol.a * (objCol * _ObjColor);
+
+                        col.a = lerp(_Alpha, 1, objCol.a);
                     }
                 }
 

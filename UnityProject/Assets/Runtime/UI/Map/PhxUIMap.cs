@@ -36,7 +36,9 @@ public class PhxUIMap : MonoBehaviour
 
     PhxCommandpost[] CommandPosts;
     Vector4[] CPPositions = new Vector4[32];
+    Vector4[] ObjPositions = new Vector4[8];
     Color[] CPColors = new Color[64];
+    Color ObjectiveColor = Color.yellow;
     bool[] CPSelected = new bool[64];
     float[] CPSelectAnim = new float[64];
     int CPCount = 0;
@@ -86,6 +88,9 @@ public class PhxUIMap : MonoBehaviour
         Texture2D cpTexture = TextureLoader.Instance.ImportUITexture("hud_flag_icon");
         MapMat.SetTexture("_CPTex", cpTexture);
 
+        Texture objTexture = TextureLoader.Instance.ImportUITexture("hud_objective_icon_circle");
+        MapMat.SetTexture("_ObjTex", objTexture);
+
         if (SCENE.MapTexture != null)
         {
             Debug.Assert(SCENE.MapTexture.width == SCENE.MapTexture.height);
@@ -124,7 +129,8 @@ public class PhxUIMap : MonoBehaviour
         RefreshTimer += Time.deltaTime;
         if (CPUpdateFreq != 0f && RefreshTimer > CPUpdateFreq)
         {
-            if (Mode == PhxUIMapMode.StaticClickable)
+            //Was StaticClickable but I think is an error
+            if (Mode == PhxUIMapMode.Static)
             {
                 for (int i = 0; i < CPCount; ++i)
                 {
@@ -143,17 +149,44 @@ public class PhxUIMap : MonoBehaviour
                 int cpIdx = i / 2;
                 int cpVecIdx = (i % 2) * 2;
 
-                Vector2 pos = new Vector2(CommandPosts[i].transform.position.x, CommandPosts[i].transform.position.z);
-                positionSum += pos;
+                if (CommandPosts[i].gameObject.activeSelf)
+                {
+                    Vector2 pos = new Vector2(CommandPosts[i].transform.position.x, CommandPosts[i].transform.position.z);
+                    positionSum += pos;
 
-                posMin.x = Mathf.Min(posMin.x, pos.x);
-                posMin.y = Mathf.Min(posMin.y, pos.y);
-                posMax.x = Mathf.Max(posMax.x, pos.x);
-                posMax.y = Mathf.Max(posMax.y, pos.y);
+                    posMin.x = Mathf.Min(posMin.x, pos.x);
+                    posMin.y = Mathf.Min(posMin.y, pos.y);
+                    posMax.x = Mathf.Max(posMax.x, pos.x);
+                    posMax.y = Mathf.Max(posMax.y, pos.y);
 
-                CPPositions[cpIdx][cpVecIdx + 0] = pos.x;
-                CPPositions[cpIdx][cpVecIdx + 1] = pos.y;
+                    CPPositions[cpIdx][cpVecIdx + 0] = pos.x;
+                    CPPositions[cpIdx][cpVecIdx + 1] = pos.y;
+                } else
+                {
+                    CPPositions[cpIdx][cpVecIdx + 0] = 0;
+                    CPPositions[cpIdx][cpVecIdx + 1] = 0;
+                }
             }
+
+            for (int i = 0; i < GAME.markers.Count; ++i)
+            {
+                int objIdx = i / 2;
+                int objVecIdx = (i % 2) * 2;
+
+                //if (CommandPosts[i].gameObject.activeSelf)
+               // {
+                    Vector2 pos = new Vector2(GAME.markers[i].transform.position.x, GAME.markers[i].transform.position.z);
+
+                    ObjPositions[objIdx][objVecIdx + 0] = pos.x;
+                    ObjPositions[objIdx][objVecIdx + 1] = pos.y;
+               // }
+                //else
+               // {
+                 //   CPPositions[objIdx][objVecIdx + 0] = 0;
+                 //   CPPositions[objIdx][objVecIdx + 1] = 0;
+               // }
+            }
+
 
             // Take the mean of all cp positions and flip the axis
             Vector2 worldOffset = positionSum / -CPCount;
@@ -174,15 +207,18 @@ public class PhxUIMap : MonoBehaviour
 
                 for (int i = 0; i < CPCount; ++i)
                 {
-                    int cpIdx = i / 2;
-                    int cpVecIdx = (i % 2) * 2;
+                    if (CommandPosts[i].gameObject.activeSelf)
+                    {
+                        int cpIdx = i / 2;
+                        int cpVecIdx = (i % 2) * 2;
 
-                    Vector2 cpWorldPos = new Vector2(CPPositions[cpIdx][cpVecIdx], CPPositions[cpIdx][cpVecIdx + 1]);
-                    Vector2 cpMapPos = ((cpWorldPos + MapOffset) / Zoom) + new Vector2(0.5f, 0.5f);
+                        Vector2 cpWorldPos = new Vector2(CPPositions[cpIdx][cpVecIdx], CPPositions[cpIdx][cpVecIdx + 1]);
+                        Vector2 cpMapPos = ((cpWorldPos + MapOffset) / Zoom) + new Vector2(0.5f, 0.5f);
 
-                    CPButtons[i].gameObject.SetActive(true);
-                    RectTransform t = CPButtons[i].transform as RectTransform;
-                    t.anchoredPosition = new Vector3(cpMapPos.x * rectT.rect.width, cpMapPos.y * rectT.rect.height, 0f);
+                        CPButtons[i].gameObject.SetActive(true);
+                        RectTransform t = CPButtons[i].transform as RectTransform;
+                        t.anchoredPosition = new Vector3(cpMapPos.x * rectT.rect.width, cpMapPos.y * rectT.rect.height, 0f);
+                    }
                 }
             }
 
@@ -194,6 +230,7 @@ public class PhxUIMap : MonoBehaviour
 
             MapMat.SetVectorArray("_CPPositions", CPPositions);
             MapMat.SetFloat("_CPCount", CPCount);
+            MapMat.SetFloat("_ObjCount", GAME.markers.Count);
             //MapMat.SetVector("_MapTexOffset", InitMapTexOffset + MapTexOffset);
 
             RefreshTimer = 0f;
@@ -219,6 +256,7 @@ public class PhxUIMap : MonoBehaviour
         MapMat.SetVector("_MapOffset", MapOffset);
 
         MapMat.SetColorArray("_CPColors", CPColors);
+        MapMat.SetColor("_ObjColor", ObjectiveColor);
         MapMat.SetFloatArray("_CPSelected", CPSelectAnim);
     }
 }

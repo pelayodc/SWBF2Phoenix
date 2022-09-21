@@ -835,6 +835,12 @@ public static class PhxLuaAPI
 	public static void RespawnObject(string objName)
     {
 		//Ex: RespawnObject ("Library_CP")
+		Debug.Log("Respawned: " + objName);
+		GameObject obj = GameObject.Find(objName.ToLower());
+		if (obj == null)
+				obj = GameObject.Find(objName);
+		if (obj != null)
+			obj.SetActive(true);
 	}
 
 	//Able to select hero from character selector
@@ -1026,8 +1032,11 @@ public static class PhxLuaAPI
 	public static void KillObject(string objName)
     {
 		//for now
+		Debug.Log("Killed: " + objName);
 		GameObject obj = GameObject.Find(objName.ToLower());
-		if(obj != null)
+		if(obj == null)
+				obj = GameObject.Find(objName);
+		if (obj != null)
 			obj.SetActive(false);
 	}
 
